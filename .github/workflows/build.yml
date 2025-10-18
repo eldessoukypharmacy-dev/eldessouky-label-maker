@@ -1,6 +1,8 @@
-name: Build Eldessouky Labels EXE and Installer
+name: Build and Package El Dessouky Label Maker
 
 on:
+  push:
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -8,51 +10,57 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      # 1️⃣ جلب السورس
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2️⃣ تثبيت بايثون
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
+      # 3️⃣ تثبيت المكتبات المطلوبة
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller pillow customtkinter
+          pip install pyinstaller customtkinter pillow
 
+      # 4️⃣ إنشاء ملف exe
       - name: Build EXE with PyInstaller
         run: |
           pyinstaller --noconfirm --onefile --windowed --icon=Icon.ico main.py
-        shell: cmd
 
-      - name: Create Inno Setup script
-        run: |
-          echo [Setup] > installer.iss
-          echo AppName=Eldessouky Labels >> installer.iss
-          echo AppVersion=1.0 >> installer.iss
-          echo DefaultDirName={autopf}\Eldessouky Labels >> installer.iss
-          echo DefaultGroupName=Eldessouky Labels >> installer.iss
-          echo OutputBaseFilename=Eldessouky-Labels-Installer >> installer.iss
-          echo OutputDir=dist >> installer.iss
-          echo [Files] >> installer.iss
-          echo Source="dist\\Eldessouky-Labels.exe"; DestDir="{app}"; Flags: ignoreversion >> installer.iss
-          echo [Icons] >> installer.iss
-          echo Name="{autoprograms}\\Eldessouky Labels"; Filename="{app}\\Eldessouky-Labels.exe" >> installer.iss
-        shell: cmd
-
-      - name: Download and install Inno Setup
+      # 5️⃣ تنزيل Inno Setup وتثبيته بصمت
+      - name: Install Inno Setup
+        shell: pwsh
         run: |
           curl -L -o innosetup.exe https://jrsoftware.org/download.php/is.exe
-          start /wait innosetup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
+          Start-Process -FilePath "innosetup.exe" -ArgumentList "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART" -Wait
 
-      - name: Build Installer
+      # 6️⃣ إنشاء سكربت إعداد (installer.iss)
+      - name: Create installer script
+        run: |
+          echo [Setup] > installer.iss
+          echo AppName=El Dessouky Label Maker >> installer.iss
+          echo AppVersion=1.0 >> installer.iss
+          echo DefaultDirName={pf}\El Dessouky Label Maker >> installer.iss
+          echo OutputDir=dist >> installer.iss
+          echo OutputBaseFilename=ElDessoukyLabelMakerSetup >> installer.iss
+          echo SetupIconFile=Icon.ico >> installer.iss
+          echo [Files] >> installer.iss
+          echo Source: "dist\main.exe"; DestDir: "{app}"; Flags: ignoreversion >> installer.iss
+          echo [Icons] >> installer.iss
+          echo Name: "{commondesktop}\El Dessouky Label Maker"; Filename: "{app}\main.exe" >> installer.iss
+
+      # 7️⃣ بناء المثبت النهائي
+      - name: Build installer
         run: |
           "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
-        shell: cmd
 
+      # 8️⃣ رفع النتائج
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Eldessouky-Installer
-          path: dist
+          name: installer
+          path: dist/*
