@@ -1,9 +1,8 @@
-name: Build Windows Installer
+name: Build Eldessouky Labels Installer
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -17,19 +16,43 @@ jobs:
       - name: 🐍 Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: 📦 Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller customtkinter pillow
 
-      - name: 🏗️ Build EXE with PyInstaller
+      - name: 🏗️ Build EXE
         run: |
           pyinstaller main.py --onefile --noconsole --name "Eldessouky-Labels"
 
-      - name: 📁 Upload EXE artifact
+      - name: 🧩 Download and install Inno Setup
+        run: |
+          choco install innosetup -y
+
+      - name: 🧱 Create Inno Setup Script
+        run: |
+          echo [Setup] > installer.iss
+          echo AppName=Eldessouky Labels >> installer.iss
+          echo AppVersion=1.0 >> installer.iss
+          echo DefaultDirName={pf}\Eldessouky Labels >> installer.iss
+          echo DefaultGroupName=Eldessouky Labels >> installer.iss
+          echo OutputDir=dist >> installer.iss
+          echo OutputBaseFilename=Eldessouky-Labels-Setup >> installer.iss
+          echo SetupIconFile=Icon.ico >> installer.iss
+          echo [Files] >> installer.iss
+          echo Source: "dist\Eldessouky-Labels.exe"; DestDir: "{app}"; Flags: ignoreversion >> installer.iss
+          echo [Icons] >> installer.iss
+          echo Name: "{group}\Eldessouky Labels"; Filename: "{app}\Eldessouky-Labels.exe" >> installer.iss
+          echo Name: "{commondesktop}\Eldessouky Labels"; Filename: "{app}\Eldessouky-Labels.exe" >> installer.iss
+
+      - name: ⚙️ Build Installer
+        run: |
+          iscc installer.iss
+
+      - name: 📤 Upload Installer
         uses: actions/upload-artifact@v4
         with:
-          name: Eldessouky-Labels
-          path: dist/Eldessouky-Labels.exe
+          name: Eldessouky-Labels-Setup
+          path: dist/Eldessouky-Labels-Setup.exe
