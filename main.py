@@ -1,287 +1,156 @@
-import os
-import json
+import customtkinter as ctk
 import tkinter as tk
-from tkinter import ttk, messagebox, simpledialog
-from tkinter import font
-from tkinter import filedialog
-from tkinter import messagebox
-from tkinter import colorchooser
-from tkinter import Toplevel
-from tkinter import Canvas
-from tkinter import StringVar, BooleanVar
-from tkinter import scrolledtext
-from tkinter import PhotoImage
-from tkinter import messagebox
-from tkinter import *
-from tkinter import filedialog
-from tkinter import font as tkfont
-from tkinter import ttk
-from tkinter import messagebox
-from tkinter import colorchooser
-from tkinter import simpledialog
-from tkinter import scrolledtext
-from tkinter import Toplevel
-from tkinter import Canvas
-from tkinter import filedialog
-from tkinter import messagebox
-from tkinter import colorchooser
-from tkinter import simpledialog
-from tkinter import scrolledtext
-from tkinter import Toplevel
-from tkinter import Canvas
-from tkinter import StringVar, BooleanVar
-from tkinter import ttk
-from tkinter import messagebox
-from tkinter import colorchooser
-from tkinter import simpledialog
-from tkinter import scrolledtext
-from tkinter import filedialog
-from tkinter import messagebox
-from tkinter import colorchooser
-from tkinter import simpledialog
-from tkinter import scrolledtext
-from tkinter import filedialog
-from tkinter import messagebox
-from tkinter import colorchooser
-from tkinter import simpledialog
-from tkinter import scrolledtext
-from tkinter import filedialog
-from tkinter import messagebox
-from tkinter import colorchooser
-from tkinter import simpledialog
-from tkinter import scrolledtext
-from tkinter import filedialog
-from tkinter import messagebox
-from tkinter import colorchooser
-from tkinter import simpledialog
-from tkinter import scrolledtext
-from tkinter import filedialog
-from tkinter import messagebox
-from tkinter import colorchooser
-from tkinter import simpledialog
-from tkinter import scrolledtext
-from tkinter import filedialog
-from tkinter import messagebox
-from tkinter import colorchooser
-from tkinter import simpledialog
-from tkinter import scrolledtext
-from tkinter import filedialog
-from tkinter import messagebox
-from tkinter import colorchooser
-from tkinter import simpledialog
-from tkinter import scrolledtext
-from tkinter import filedialog
-from tkinter import messagebox
-from tkinter import colorchooser
-from tkinter import simpledialog
-from tkinter import scrolledtext
-from tkinter import filedialog
-from tkinter import messagebox
-from tkinter import colorchooser
-from tkinter import simpledialog
-from tkinter import scrolledtext
-from tkinter import filedialog
-from tkinter import messagebox
-from tkinter import colorchooser
-from tkinter import simpledialog
-from tkinter import scrolledtext
-from tkinter import filedialog
-from tkinter import messagebox
-from tkinter import colorchooser
-from tkinter import simpledialog
-from tkinter import scrolledtext
-from tkinter import filedialog
-from tkinter import messagebox
-from tkinter import colorchooser
-from tkinter import simpledialog
-from tkinter import scrolledtext
-from tkinter import filedialog
-from tkinter import messagebox
-from tkinter import colorchooser
-from tkinter import simpledialog
-from tkinter import scrolledtext
+from tkinter import messagebox, simpledialog
+from PIL import Image, ImageTk
+import json
+import tempfile
+import os
 
-from tkinter import filedialog
-from tkinter import messagebox
-from tkinter import colorchooser
-from tkinter import simpledialog
-from tkinter import scrolledtext
-from tkinter import filedialog
-from tkinter import messagebox
-from tkinter import colorchooser
-from tkinter import simpledialog
-from tkinter import scrolledtext
+# ==================== إعداد التطبيق ====================
+ctk.set_appearance_mode("light")
+ctk.set_default_color_theme("blue")
 
-from tkinter import filedialog
-from tkinter import messagebox
-from tkinter import colorchooser
-from tkinter import simpledialog
-from tkinter import scrolledtext
+app = ctk.CTk()
+app.title("🩺 برنامج طباعة لاصقات الدواء - صيدلية الدسوقي")
+app.geometry("750x600")
 
-from tkinter import filedialog
-from tkinter import messagebox
-from tkinter import colorchooser
-from tkinter import simpledialog
-from tkinter import scrolledtext
-
-import webbrowser
-from tkinter import font
-from tkinter import messagebox
-from tkinter import filedialog
-from tkinter import scrolledtext
-from tkinter import ttk
-from tkinter import simpledialog
-from tkinter import colorchooser
-from tkinter import messagebox
-from tkinter import font
-from tkinter import filedialog
-from tkinter import scrolledtext
-from tkinter import ttk
-from tkinter import simpledialog
-from tkinter import colorchooser
-from tkinter import messagebox
-from tkinter import font
-from tkinter import filedialog
-from tkinter import scrolledtext
-from tkinter import ttk
-from tkinter import simpledialog
-from tkinter import colorchooser
-from tkinter import messagebox
-from tkinter import font
-from tkinter import filedialog
-from tkinter import scrolledtext
-from tkinter import ttk
-from tkinter import simpledialog
-from tkinter import colorchooser
-from tkinter import messagebox
-from tkinter import font
-from tkinter import filedialog
-from tkinter import scrolledtext
-from tkinter import ttk
-from tkinter import simpledialog
-from tkinter import colorchooser
-from tkinter import messagebox
-from tkinter import font
-from tkinter import filedialog
-from tkinter import scrolledtext
-from tkinter import ttk
-from tkinter import simpledialog
-from tkinter import colorchooser
-from tkinter import messagebox
-from tkinter import font
-from tkinter import filedialog
-from tkinter import scrolledtext
-from tkinter import ttk
-from tkinter import simpledialog
-from tkinter import colorchooser
-from tkinter import messagebox
-
-# Eldessouky Labels - استخدامات الأدوية
-
-TEMPLATES_FILE = "templates.json"
+# ==================== تحميل القوالب ====================
+TEMPLATE_FILE = "templates.json"
 
 def load_templates():
-    if os.path.exists(TEMPLATES_FILE):
-        with open(TEMPLATES_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return [
-        {"name": "3 مرات قبل الأكل", "text": "خذ الدواء 3 مرات قبل الأكل"},
-        {"name": "مرتين بعد الأكل", "text": "خذ الدواء مرتين بعد الأكل"},
-        {"name": "مرة واحدة يوميًا", "text": "خذ الدواء مرة واحدة يوميًا"},
-    ]
+    if not os.path.exists(TEMPLATE_FILE):
+        return []
+    with open(TEMPLATE_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
 
 def save_templates(templates):
-    with open(TEMPLATES_FILE, "w", encoding="utf-8") as f:
+    with open(TEMPLATE_FILE, "w", encoding="utf-8") as f:
         json.dump(templates, f, ensure_ascii=False, indent=2)
 
-class LabelApp(tk.Tk):
-    def __init__(self):
-        super().__init__()
-        self.title("Eldessouky Labels - طباعة استخدامات")
-        self.geometry("500x400")
-        self.configure(bg="#e6f0ff")
+templates = load_templates()
+filtered_templates = templates.copy()  # للبحث
 
-        self.templates = load_templates()
+# ==================== الإطارات الأساسية ====================
+frame = ctk.CTkFrame(app, corner_radius=10)
+frame.pack(padx=20, pady=20, fill="both", expand=True)
 
-        tk.Label(self, text="📋 قائمة الاستخدامات", bg="#e6f0ff", font=("Tahoma", 14, "bold")).pack(pady=10)
+title_label = ctk.CTkLabel(frame, text="📋 قوالب الطباعة", font=("Tahoma", 22, "bold"))
+title_label.pack(pady=10)
 
-        self.listbox = tk.Listbox(self, selectmode=tk.MULTIPLE, font=("Tahoma", 12), width=40, height=10)
-        self.listbox.pack(pady=10)
-        self.refresh_list()
+# ==================== مربع البحث ====================
+search_var = tk.StringVar()
 
-        frame_btn = tk.Frame(self, bg="#e6f0ff")
-        frame_btn.pack(pady=10)
+def filter_templates(*args):
+    query = search_var.get().strip().lower()
+    global filtered_templates
+    if query == "":
+        filtered_templates = templates.copy()
+    else:
+        filtered_templates = [t for t in templates if query in t["name"].lower() or query in t["text"].lower()]
+    refresh_checkboxes()
 
-        tk.Button(frame_btn, text="🖨️ معاينة و طباعة", font=("Tahoma", 10, "bold"), bg="#0078d7", fg="white",
-                  command=self.preview_print).grid(row=0, column=0, padx=5)
-        tk.Button(frame_btn, text="➕ إضافة", font=("Tahoma", 10, "bold"), bg="#0078d7", fg="white",
-                  command=self.add_template).grid(row=0, column=1, padx=5)
-        tk.Button(frame_btn, text="✏️ تعديل", font=("Tahoma", 10, "bold"), bg="#0078d7", fg="white",
-                  command=self.edit_template).grid(row=0, column=2, padx=5)
-        tk.Button(frame_btn, text="❌ حذف", font=("Tahoma", 10, "bold"), bg="#0078d7", fg="white",
-                  command=self.delete_template).grid(row=0, column=3, padx=5)
+search_entry = ctk.CTkEntry(frame, placeholder_text="🔍 ابحث عن قالب...", textvariable=search_var, width=400, height=35, font=("Tahoma", 14))
+search_entry.pack(pady=(0, 10))
+search_var.trace_add("write", filter_templates)
 
-    def refresh_list(self):
-        self.listbox.delete(0, tk.END)
-        for t in self.templates:
-            self.listbox.insert(tk.END, t["name"])
+# ==================== قائمة القوالب ====================
+template_vars = []
+checkbox_frame = ctk.CTkScrollableFrame(frame, label_text="اختيار القوالب للطباعة", width=600, height=250)
+checkbox_frame.pack(pady=10, padx=20, fill="both", expand=True)
 
-    def add_template(self):
-        name = simpledialog.askstring("اسم الاستخدام", "اكتب اسم الاستخدام:")
-        if name:
-            text = simpledialog.askstring("النص الكامل", "اكتب نص الاستخدام:")
-            if text:
-                self.templates.append({"name": name, "text": text})
-                save_templates(self.templates)
-                self.refresh_list()
+def refresh_checkboxes():
+    for widget in checkbox_frame.winfo_children():
+        widget.destroy()
+    template_vars.clear()
+    for tpl in filtered_templates:
+        var = tk.BooleanVar()
+        cb = ctk.CTkCheckBox(checkbox_frame, text=tpl["name"], variable=var, font=("Tahoma", 16))
+        cb.pack(anchor="w", padx=20, pady=5)
+        template_vars.append((var, tpl))
 
-    def edit_template(self):
-        sel = self.listbox.curselection()
-        if not sel:
-            messagebox.showinfo("تنبيه", "اختر استخدام لتعديله.")
-            return
-        idx = sel[0]
-        old = self.templates[idx]
-        name = simpledialog.askstring("تعديل الاسم", "اكتب الاسم الجديد:", initialvalue=old["name"])
-        text = simpledialog.askstring("تعديل النص", "اكتب النص الجديد:", initialvalue=old["text"])
-        if name and text:
-            self.templates[idx] = {"name": name, "text": text}
-            save_templates(self.templates)
-            self.refresh_list()
+refresh_checkboxes()
 
-    def delete_template(self):
-        sel = self.listbox.curselection()
-        if not sel:
-            messagebox.showinfo("تنبيه", "اختر استخدام لحذفه.")
-            return
-        for i in reversed(sel):
-            del self.templates[i]
-        save_templates(self.templates)
-        self.refresh_list()
+# ==================== إدارة القوالب ====================
+def add_template():
+    name = simpledialog.askstring("إضافة قالب", "📝 اكتب اسم القالب:")
+    if not name:
+        return
+    text = simpledialog.askstring("إضافة القالب", "✏️ اكتب نص القالب:")
+    if not text:
+        return
+    templates.append({"name": name, "text": text})
+    save_templates(templates)
+    filter_templates()
 
-    def preview_print(self):
-        sel = self.listbox.curselection()
-        if not sel:
-            messagebox.showinfo("تنبيه", "اختر استخدام واحد على الأقل للمعاينة.")
-            return
+def edit_template():
+    names = [tpl["name"] for tpl in templates]
+    if not names:
+        messagebox.showinfo("تنبيه", "⚠️ لا توجد قوالب لتعديلها.")
+        return
+    name = simpledialog.askstring("تعديل قالب", "اكتب اسم القالب المراد تعديله:")
+    if name not in names:
+        messagebox.showerror("خطأ", "❌ القالب غير موجود.")
+        return
+    tpl = next(t for t in templates if t["name"] == name)
+    new_text = simpledialog.askstring("تعديل نص القالب", f"النص الحالي:\n\n{tpl['text']}\n\n🖊️ اكتب النص الجديد:")
+    if not new_text:
+        return
+    tpl["text"] = new_text
+    save_templates(templates)
+    filter_templates()
 
-        preview = tk.Toplevel(self)
-        preview.title("معاينة الطباعة")
-        preview.geometry("400x300")
-        preview.configure(bg="white")
+def delete_template():
+    names = [tpl["name"] for tpl in templates]
+    if not names:
+        messagebox.showinfo("تنبيه", "⚠️ لا توجد قوالب لحذفها.")
+        return
+    name = simpledialog.askstring("حذف قالب", "🗑️ اكتب اسم القالب المراد حذفه:")
+    if name not in names:
+        messagebox.showerror("خطأ", "❌ القالب غير موجود.")
+        return
+    templates[:] = [t for t in templates if t["name"] != name]
+    save_templates(templates)
+    filter_templates()
 
-        text = "\n\n".join([self.templates[i]["text"] for i in sel])
-        tk.Label(preview, text=text, font=("Tahoma", 12), bg="white", justify="right", wraplength=350).pack(padx=10, pady=10)
+# ==================== المعاينة ====================
+def preview_labels():
+    selected = [tpl["text"] for var, tpl in template_vars if var.get()]
+    if not selected:
+        messagebox.showwarning("تنبيه", "⚠️ من فضلك اختر قالب واحد على الأقل.")
+        return
 
-        tk.Button(preview, text="طباعة", bg="#0078d7", fg="white", font=("Tahoma", 10, "bold"),
-                  command=lambda: self.print_labels(text)).pack(pady=10)
+    preview_window = ctk.CTkToplevel(app)
+    preview_window.title("👁️‍🗨️ معاينة قبل الطباعة")
+    preview_window.geometry("450x400")
 
-    def print_labels(self, text):
-        file_name = "print_preview.txt"
-        with open(file_name, "w", encoding="utf-8") as f:
-            f.write(text)
-        os.startfile(file_name, "print")
+    txt = "\n\n".join(selected)
+    text_widget = ctk.CTkTextbox(preview_window, wrap="word", font=("Tahoma", 16))
+    text_widget.insert("1.0", txt)
+    text_widget.configure(state="disabled")
+    text_widget.pack(padx=20, pady=20, fill="both", expand=True)
 
-if __name__ == "__main__":
-    app = LabelApp()
-    app.mainloop()
+# ==================== الطباعة ====================
+def print_labels():
+    selected = [tpl["text"] for var, tpl in template_vars if var.get()]
+    if not selected:
+        messagebox.showwarning("تنبيه", "⚠️ اختر قالب واحد على الأقل للطباعة.")
+        return
+
+    txt = "\n\n".join(selected)
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".txt")
+    temp_file.write(txt.encode("utf-8"))
+    temp_file.close()
+    os.startfile(temp_file.name, "print")
+
+# ==================== الأزرار ====================
+btns_frame = ctk.CTkFrame(frame)
+btns_frame.pack(pady=10)
+
+ctk.CTkButton(btns_frame, text="➕ إضافة قالب", command=add_template, width=150).grid(row=0, column=0, padx=10, pady=5)
+ctk.CTkButton(btns_frame, text="✏️ تعديل قالب", command=edit_template, width=150).grid(row=0, column=1, padx=10, pady=5)
+ctk.CTkButton(btns_frame, text="🗑️ حذف قالب", command=delete_template, width=150).grid(row=0, column=2, padx=10, pady=5)
+
+ctk.CTkButton(frame, text="👁️‍🗨️ معاينة قبل الطباعة", command=preview_labels, width=250, height=40).pack(pady=10)
+ctk.CTkButton(frame, text="🖨️ طباعة المحدد", command=print_labels, width=250, height=40).pack(pady=5)
+
+app.mainloop()
