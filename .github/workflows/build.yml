@@ -1,7 +1,6 @@
-name: Build and Package Eldessouky Label Maker
+name: Build Windows Installer
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
@@ -21,45 +20,34 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          if (Test-Path "requirements.txt") { pip install -r requirements.txt }
-          pip install pyinstaller
+          pip install pyinstaller customtkinter pillow
 
-      - name: Build EXE with PyInstaller
+      - name: Build EXE
         run: |
-          pyinstaller --noconfirm --onefile --windowed --icon=Icon.ico main.py
-        shell: powershell
+          pyinstaller ^
+            --noconfirm ^
+            --windowed ^
+            --onefile ^
+            --add-data "C:\hostedtoolcache\windows\Python\3.11.9\x64\Lib\tkinter;tkinter" ^
+            --add-data "C:\hostedtoolcache\windows\Python\3.11.9\x64\Lib\tcl8.6;tcl" ^
+            --icon=Icon.ico ^
+            main.py
 
-      - name: Install Inno Setup (for Installer EXE)
-        run: |
-          choco install innosetup --yes
-        shell: powershell
+      - name: Download Inno Setup
+        run: curl -L -o innosetup.exe https://jrsoftware.org/download.php/is.exe
 
-      - name: Create Inno Setup Script
+      - name: Install Inno Setup
         run: |
-          echo [Setup] > installer.iss
-          echo AppName=El Dessouky Label Maker >> installer.iss
-          echo AppVersion=1.0 >> installer.iss
-          echo DefaultDirName={autopf}\ElDessoukyLabelMaker >> installer.iss
-          echo DefaultGroupName=El Dessouky Label Maker >> installer.iss
-          echo OutputDir=dist >> installer.iss
-          echo OutputBaseFilename=Eldessouky-LabelMaker-Setup >> installer.iss
-          echo SetupIconFile=Icon.ico >> installer.iss
-          echo [Files] >> installer.iss
-          echo Source: "dist\main.exe"; DestDir: "{app}"; Flags: ignoreversion >> installer.iss
-          echo [Icons] >> installer.iss
-          echo Name: "{autoprograms}\El Dessouky Label Maker"; Filename: "{app}\main.exe"; IconFilename: "{app}\Icon.ico" >> installer.iss
-        shell: cmd
+          Start-Process -FilePath ".\innosetup.exe" -ArgumentList "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART" -Wait
 
       - name: Build Installer
         run: |
-          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
-        shell: cmd
+          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" setup.iss
 
-      - name: Upload build artifacts
+      - name: Upload Installer
         uses: actions/upload-artifact@v4
         with:
-          name: Eldessouky-LabelMaker-Build
+          name: Windows-Installer
           path: |
-            dist\main.exe
-            dist\Eldessouky-LabelMaker-Setup.exe
+            dist/*.exe
+            Output/*.exe
