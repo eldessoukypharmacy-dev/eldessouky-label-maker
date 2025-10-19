@@ -1,6 +1,9 @@
-name: Build ElDessouky Label Maker
+name: Build El Dessouky Label Maker
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -16,43 +19,28 @@ jobs:
         with:
           python-version: '3.11'
 
-     - name: Install dependencies
-  run: |
-    python -m pip install --upgrade pip
-    if (Test-Path "requirements.txt") { pip install -r requirements.txt }
-    pip install pyinstaller
-
-
-      - name: Build EXE with PyInstaller
+      - name: Install dependencies
+        shell: pwsh
         run: |
-          pyinstaller main.py --noconfirm --onefile --windowed --icon=icon.ico --name "ElDessoukyLabelMaker"
+          python -m pip install --upgrade pip
+          if (Test-Path "requirements.txt") { pip install -r requirements.txt }
+          pip install pyinstaller
 
-      - name: Create Inno Setup script
+      - name: Build executable with PyInstaller
+        shell: pwsh
         run: |
-          echo [Setup] > installer.iss
-          echo AppName=ElDessouky Label Maker >> installer.iss
-          echo AppVersion=1.0 >> installer.iss
-          echo DefaultDirName={pf}\ElDessoukyLabelMaker >> installer.iss
-          echo OutputBaseFilename=ElDessoukyLabelMaker_Setup >> installer.iss
-          echo SetupIconFile=icon.ico >> installer.iss
-          echo [Files] >> installer.iss
-          echo Source: "dist\ElDessoukyLabelMaker.exe"; DestDir: "{app}"; Flags: ignoreversion >> installer.iss
-          echo [Icons] >> installer.iss
-          echo Name: "{desktop}\ElDessouky Label Maker"; Filename: "{app}\ElDessoukyLabelMaker.exe" >> installer.iss
+          pyinstaller --noconfirm --onefile --windowed --icon=Icon.ico main.py
+        continue-on-error: false
 
-      - name: Install Inno Setup
+      - name: Create release folder
+        shell: pwsh
         run: |
-          curl -L -o innosetup.exe https://jrsoftware.org/download.php/is.exe
-          Start-Process -FilePath "innosetup.exe" -ArgumentList "/VERYSILENT","/SUPPRESSMSGBOXES","/NORESTART" -Wait
+          if (Test-Path "release") { Remove-Item -Recurse -Force release }
+          New-Item -ItemType Directory release
+          Copy-Item -Path "dist/main.exe" -Destination "release/ElDessouky-LabelMaker.exe"
 
-      - name: Build installer
-        run: |
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
-
-      - name: Upload artifacts
+      - name: Upload EXE as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ElDessoukyLabelMaker_Setup
-          path: |
-            dist\ElDessoukyLabelMaker.exe
-            Output\ElDessoukyLabelMaker_Setup.exe
+          name: ElDessouky-LabelMaker
+          path: release/ElDessouky-LabelMaker.exe
